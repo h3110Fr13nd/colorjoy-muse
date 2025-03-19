@@ -17,7 +17,8 @@ import {
   Upload, 
   ExternalLink, 
   EyeOff, 
-  Eye 
+  Eye,
+  Plus,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
@@ -36,8 +37,9 @@ const ColorPalette: React.FC = () => {
   // Generate colors on first load or parse from URL
   useEffect(() => {
     const urlPalette = parsePaletteFromURL();
-    if (urlPalette && urlPalette.length === 5) {
+    if (urlPalette && urlPalette.length > 0) {
       setColors(urlPalette);
+      setLockedColors(Array(urlPalette.length).fill(false));
     } else {
       generateNewPalette();
     }
@@ -84,6 +86,55 @@ const ColorPalette: React.FC = () => {
       const newColors = [...prev];
       newColors[index] = newColor;
       return newColors;
+    });
+  };
+
+  const addColor = (index: number) => {
+    const newColor = generateRandomColor();
+    setColors(prev => {
+      const newColors = [...prev];
+      newColors.splice(index, 0, newColor);
+      return newColors;
+    });
+    setLockedColors(prev => {
+      const newLocks = [...prev];
+      newLocks.splice(index, 0, false);
+      return newLocks;
+    });
+    
+    toast({
+      title: "Color Added",
+      description: "A new color has been added to your palette.",
+      duration: 2000,
+    });
+  };
+
+  const removeColor = (index: number) => {
+    if (colors.length <= 1) {
+      toast({
+        title: "Cannot Remove",
+        description: "Your palette must have at least one color.",
+        variant: "destructive",
+        duration: 2000,
+      });
+      return;
+    }
+    
+    setColors(prev => {
+      const newColors = [...prev];
+      newColors.splice(index, 1);
+      return newColors;
+    });
+    setLockedColors(prev => {
+      const newLocks = [...prev];
+      newLocks.splice(index, 1);
+      return newLocks;
+    });
+    
+    toast({
+      title: "Color Removed",
+      description: "The color has been removed from your palette.",
+      duration: 2000,
     });
   };
   
@@ -211,17 +262,69 @@ const ColorPalette: React.FC = () => {
         </div>
       )}
       
-      {/* Color Columns */}
-      <div className={`grid grid-cols-5 flex-grow transition-all ${isGenerating ? 'opacity-80' : 'opacity-100'}`}>
-        {colors.map((color, index) => (
-          <ColorColumn
-            key={`${index}-${color}`}
-            color={color}
-            locked={lockedColors[index]}
-            onLockToggle={() => toggleLock(index)}
-            onColorChange={(newColor) => updateColor(index, newColor)}
-            className={isGenerating ? 'animate-color-change' : ''}
-          />
+      {/* Color Columns with Add Color Buttons */}
+      <div className="flex flex-grow transition-all relative">
+        {/* Add color button at the beginning */}
+        <div className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="secondary" 
+                size="icon" 
+                className="h-8 w-8 rounded-full bg-white shadow-md border border-gray-200" 
+                onClick={() => addColor(0)}
+              >
+                <Plus size={16} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Add color at beginning</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+
+        {/* Color columns */}
+        <div className={`grid grid-cols-${colors.length} flex-grow transition-all ${isGenerating ? 'opacity-80' : 'opacity-100'}`}>
+          {colors.map((color, index) => (
+            <ColorColumn
+              key={`${index}-${color}`}
+              color={color}
+              locked={lockedColors[index]}
+              onLockToggle={() => toggleLock(index)}
+              onColorChange={(newColor) => updateColor(index, newColor)}
+              onRemove={() => removeColor(index)}
+              className={isGenerating ? 'animate-color-change' : ''}
+            />
+          ))}
+        </div>
+
+        {/* Add color buttons between columns */}
+        {colors.map((_, index) => (
+          <div 
+            key={`add-btn-${index}`} 
+            className="absolute z-10" 
+            style={{ 
+              left: `${((index + 1) / colors.length) * 100}%`, 
+              top: '50%', 
+              transform: 'translate(-50%, -50%)' 
+            }}
+          >
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="secondary" 
+                  size="icon" 
+                  className="h-8 w-8 rounded-full bg-white shadow-md border border-gray-200" 
+                  onClick={() => addColor(index + 1)}
+                >
+                  <Plus size={16} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Add color</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
         ))}
       </div>
     </div>

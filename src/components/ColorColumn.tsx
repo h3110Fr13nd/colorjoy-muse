@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Lock, Unlock, Copy, Info, MoreVertical, ChevronDown, ChevronUp } from 'lucide-react';
+import { Lock, Unlock, Copy, Info, MoreVertical, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { 
   isLightColor, 
   copyToClipboard, 
@@ -21,6 +21,7 @@ interface ColorColumnProps {
   locked: boolean;
   onLockToggle: () => void;
   onColorChange: (newColor: string) => void;
+  onRemove: () => void;
   className?: string;
 }
 
@@ -29,6 +30,7 @@ const ColorColumn: React.FC<ColorColumnProps> = ({
   locked, 
   onLockToggle, 
   onColorChange,
+  onRemove,
   className = ''
 }) => {
   const [showAdjustments, setShowAdjustments] = useState(false);
@@ -94,6 +96,20 @@ const ColorColumn: React.FC<ColorColumnProps> = ({
               </TooltipTrigger>
               <TooltipContent>
                 <p>Copy hex code</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button 
+                  onClick={onRemove} 
+                  className={`p-3 rounded-full transition-all ${hoverColor} ${textColor}`}
+                >
+                  <X size={20} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Remove color</p>
               </TooltipContent>
             </Tooltip>
 
