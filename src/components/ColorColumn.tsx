@@ -65,117 +65,121 @@ const ColorColumn: React.FC<ColorColumnProps> = ({
 
   return (
     <div 
-      className={`color-column h-full w-full flex flex-col items-center justify-between py-10 ${className}`}
+      className={`color-column h-full flex flex-col items-center justify-between py-10 ${className}`}
       style={{ backgroundColor: color }}
     >
-      <div className="color-actions flex flex-col items-center gap-3 w-full px-4">
-        <div className="flex items-center justify-between w-full max-w-xs">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button 
-                  onClick={onLockToggle} 
-                  className={`p-3 rounded-full transition-all ${hoverColor} ${textColor}`}
-                >
-                  {locked ? <Lock size={20} /> : <Unlock size={20} />}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{locked ? "Unlock color" : "Lock color"}</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button 
-                  onClick={handleCopyToClipboard} 
-                  className={`p-3 rounded-full transition-all ${hoverColor} ${textColor}`}
-                >
-                  <Copy size={20} />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Copy hex code</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button 
-                  onClick={onRemove} 
-                  className={`p-3 rounded-full transition-all ${hoverColor} ${textColor}`}
-                >
-                  <X size={20} />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Remove color</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <DropdownMenu>
+      {/* Top area with color info */}
+      <div className="flex-1 flex flex-col items-center justify-center mb-8">
+        <div className="color-actions flex flex-col items-center gap-3 w-full px-4">
+          <div className="flex flex-col items-center gap-2">
+            <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <DropdownMenuTrigger 
+                  <button 
+                    onClick={onLockToggle} 
                     className={`p-3 rounded-full transition-all ${hoverColor} ${textColor}`}
                   >
-                    <MoreVertical size={20} />
-                  </DropdownMenuTrigger>
+                    {locked ? <Lock size={20} /> : <Unlock size={20} />}
+                  </button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>More options</p>
+                  <p>{locked ? "Unlock color" : "Lock color"}</p>
                 </TooltipContent>
               </Tooltip>
-              <DropdownMenuContent align="center">
-                <DropdownMenuItem onClick={() => setShowAdjustments(!showAdjustments)}>
-                  Adjust shade
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleCopyToClipboard}>
-                  Copy HEX
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => copyToClipboard(`rgb(${parseInt(color.slice(1, 3), 16)}, ${parseInt(color.slice(3, 5), 16)}, ${parseInt(color.slice(5, 7), 16)})`)}>
-                  Copy RGB
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button 
-                  onClick={() => setShowAdjustments(!showAdjustments)} 
-                  className={`p-3 rounded-full transition-all ${hoverColor} ${textColor}`}
-                >
-                  {showAdjustments ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{showAdjustments ? "Hide adjustments" : "Show adjustments"}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button 
+                    onClick={handleCopyToClipboard} 
+                    className={`p-3 rounded-full transition-all ${hoverColor} ${textColor}`}
+                  >
+                    <Copy size={20} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Copy hex code</p>
+                </TooltipContent>
+              </Tooltip>
 
-        {showAdjustments && (
-          <div className={`${textColor} bg-white bg-opacity-10 backdrop-blur-sm p-3 rounded-lg animate-fade-in`}>
-            <div className="flex gap-2">
-              <button 
-                onClick={() => adjustColor(-10)} 
-                className={`px-2 py-1 rounded ${hoverColor}`}
-              >
-                Darker
-              </button>
-              <button 
-                onClick={() => adjustColor(10)} 
-                className={`px-2 py-1 rounded ${hoverColor}`}
-              >
-                Lighter
-              </button>
-            </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button 
+                    onClick={onRemove} 
+                    className={`p-3 rounded-full transition-all ${hoverColor} ${textColor}`}
+                  >
+                    <X size={20} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Remove color</p>
+                </TooltipContent>
+              </Tooltip>
+
+              <DropdownMenu>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <DropdownMenuTrigger 
+                      className={`p-3 rounded-full transition-all ${hoverColor} ${textColor}`}
+                    >
+                      <MoreVertical size={20} />
+                    </DropdownMenuTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>More options</p>
+                  </TooltipContent>
+                </Tooltip>
+                <DropdownMenuContent align="center">
+                  <DropdownMenuItem onClick={() => setShowAdjustments(!showAdjustments)}>
+                    Adjust shade
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleCopyToClipboard}>
+                    Copy HEX
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => copyToClipboard(`rgb(${parseInt(color.slice(1, 3), 16)}, ${parseInt(color.slice(3, 5), 16)}, ${parseInt(color.slice(5, 7), 16)})`)}>
+                    Copy RGB
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button 
+                    onClick={() => setShowAdjustments(!showAdjustments)} 
+                    className={`p-3 rounded-full transition-all ${hoverColor} ${textColor}`}
+                  >
+                    {showAdjustments ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{showAdjustments ? "Hide adjustments" : "Show adjustments"}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
-        )}
+
+          {showAdjustments && (
+            <div className={`${textColor} bg-white bg-opacity-10 backdrop-blur-sm p-3 rounded-lg animate-fade-in`}>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => adjustColor(-10)} 
+                  className={`px-2 py-1 rounded ${hoverColor}`}
+                >
+                  Darker
+                </button>
+                <button 
+                  onClick={() => adjustColor(10)} 
+                  className={`px-2 py-1 rounded ${hoverColor}`}
+                >
+                  Lighter
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="flex flex-col items-center">
+      {/* Bottom area with color info */}
+      <div className="flex flex-col items-center mt-auto">
         <h2 className={`hex-display text-2xl font-bold mb-2 ${textColor}`}>
           {color.toUpperCase()}
         </h2>

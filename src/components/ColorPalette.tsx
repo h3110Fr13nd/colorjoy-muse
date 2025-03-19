@@ -63,6 +63,7 @@ const ColorPalette: React.FC = () => {
     setTimeout(() => {
       setColors(prevColors => {
         return prevColors.map((color, index) => {
+          // Only regenerate colors for unlocked columns
           if (lockedColors[index]) {
             return color;
           }
@@ -172,7 +173,7 @@ const ColorPalette: React.FC = () => {
   };
   
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen overflow-x-hidden">
       {/* Header */}
       <header className="flex items-center justify-between p-4 border-b border-gray-100 bg-white backdrop-blur-sm bg-opacity-90 z-10">
         <div className="flex items-center">
@@ -263,9 +264,9 @@ const ColorPalette: React.FC = () => {
       )}
       
       {/* Color Columns with Add Color Buttons */}
-      <div className="flex-grow relative">
+      <div className="flex-grow relative overflow-hidden">
         {/* Add color button at the beginning */}
-        <div className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10">
+        <div className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 ml-1">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button 
@@ -285,7 +286,7 @@ const ColorPalette: React.FC = () => {
 
         {/* Color columns */}
         <div 
-          className={`flex w-full h-full ${isGenerating ? 'opacity-80' : 'opacity-100'}`}
+          className="flex w-full h-full overflow-hidden" 
           style={{ 
             transition: 'all 0.3s ease'
           }}
@@ -294,7 +295,7 @@ const ColorPalette: React.FC = () => {
             <div 
               key={`column-${index}`} 
               className="flex-1 h-full"
-              style={{ minWidth: 0 }} // Prevent flex items from overflowing
+              style={{ minWidth: 0 }}
             >
               <ColorColumn
                 key={`${index}-${color}`}
@@ -310,7 +311,7 @@ const ColorPalette: React.FC = () => {
         </div>
 
         {/* Add color buttons between columns */}
-        {colors.map((_, index) => (
+        {colors.map((_, index) => index < colors.length - 1 && (
           <div 
             key={`add-btn-${index}`} 
             className="absolute z-10" 
@@ -337,6 +338,25 @@ const ColorPalette: React.FC = () => {
             </Tooltip>
           </div>
         ))}
+
+        {/* Add color button at the end */}
+        <div className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 mr-1">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="secondary" 
+                size="icon" 
+                className="h-8 w-8 rounded-full bg-white shadow-md border border-gray-200" 
+                onClick={() => addColor(colors.length)}
+              >
+                <Plus size={16} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Add color at end</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </div>
     </div>
   );
