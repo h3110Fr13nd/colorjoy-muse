@@ -65,7 +65,7 @@ const ColorColumn: React.FC<ColorColumnProps> = ({
 
   return (
     <div 
-      className={`color-column h-full w-full flex flex-col items-center justify-between py-10 ${className}`}
+      className={`color-column h-full flex flex-col items-center justify-between py-10 ${className}`}
       style={{ backgroundColor: color }}
     >
       <div className="color-actions flex flex-col items-center gap-3 w-full px-4">
