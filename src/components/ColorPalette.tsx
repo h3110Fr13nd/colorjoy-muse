@@ -263,7 +263,7 @@ const ColorPalette: React.FC = () => {
       )}
       
       {/* Color Columns with Add Color Buttons */}
-      <div className="flex-grow relative">
+      <div className="flex-grow flex flex-row h-full relative">
         {/* Add color button at the beginning */}
         <div className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10">
           <Tooltip>
@@ -285,27 +285,19 @@ const ColorPalette: React.FC = () => {
 
         {/* Color columns */}
         <div 
-          className={`flex w-full h-full ${isGenerating ? 'opacity-80' : 'opacity-100'}`}
-          style={{ 
-            transition: 'all 0.3s ease'
-          }}
+          className={`flex-grow flex flex-row h-full transition-all ${isGenerating ? 'opacity-80' : 'opacity-100'}`}
+          style={{ gridTemplateColumns: `repeat(${colors.length}, 1fr)` }}
         >
           {colors.map((color, index) => (
-            <div 
-              key={`column-${index}`} 
-              className="flex-1 h-full"
-              style={{ minWidth: 0 }} // Prevent flex items from overflowing
-            >
-              <ColorColumn
-                key={`${index}-${color}`}
-                color={color}
-                locked={lockedColors[index]}
-                onLockToggle={() => toggleLock(index)}
-                onColorChange={(newColor) => updateColor(index, newColor)}
-                onRemove={() => removeColor(index)}
-                className={isGenerating ? 'animate-color-change' : ''}
-              />
-            </div>
+            <ColorColumn
+              key={`${index}-${color}`}
+              color={color}
+              locked={lockedColors[index]}
+              onLockToggle={() => toggleLock(index)}
+              onColorChange={(newColor) => updateColor(index, newColor)}
+              onRemove={() => removeColor(index)}
+              className={isGenerating ? 'animate-color-change' : ''}
+            />
           ))}
         </div>
 
