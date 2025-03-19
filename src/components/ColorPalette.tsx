@@ -263,7 +263,7 @@ const ColorPalette: React.FC = () => {
       )}
       
       {/* Color Columns with Add Color Buttons */}
-      <div className="flex flex-grow transition-all relative">
+      <div className="flex-grow flex flex-row h-full relative">
         {/* Add color button at the beginning */}
         <div className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10">
           <Tooltip>
@@ -284,7 +284,10 @@ const ColorPalette: React.FC = () => {
         </div>
 
         {/* Color columns */}
-        <div className={`grid grid-cols-${colors.length} flex-grow transition-all ${isGenerating ? 'opacity-80' : 'opacity-100'}`}>
+        <div 
+          className={`flex-grow flex flex-row h-full transition-all ${isGenerating ? 'opacity-80' : 'opacity-100'}`}
+          style={{ gridTemplateColumns: `repeat(${colors.length}, 1fr)` }}
+        >
           {colors.map((color, index) => (
             <ColorColumn
               key={`${index}-${color}`}
