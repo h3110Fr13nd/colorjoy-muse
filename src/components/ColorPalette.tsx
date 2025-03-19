@@ -1,11 +1,12 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import ColorColumn from './ColorColumn';
 import { 
   generatePalette, 
   generateRandomColor, 
   parsePaletteFromURL,
-  exportPaletteAsURL
+  exportPaletteAsURL,
+  generateHarmonizedColor,
+  generateInfluencedPalette
 } from '@/utils/colorUtils';
 import { toast } from '@/components/ui/use-toast';
 import { 
@@ -33,6 +34,18 @@ const ColorPalette: React.FC = () => {
   const [lockedColors, setLockedColors] = useState<boolean[]>(Array(5).fill(false));
   const [isGenerating, setIsGenerating] = useState(false);
   const [showInstructions, setShowInstructions] = useState(true);
+  const generateNewPalette = useCallback(() => {
+    setIsGenerating(true);
+    
+    // Animation timing
+    setTimeout(() => {
+      setColors(prevColors => {
+        // Use the generateInfluencedPalette function to create colors harmonized with locked ones
+        return generateInfluencedPalette(prevColors, lockedColors);
+      });
+      setIsGenerating(false);
+    }, 300);
+  }, [lockedColors]);
   
   // Generate colors on first load or parse from URL
   useEffect(() => {
@@ -54,30 +67,16 @@ const ColorPalette: React.FC = () => {
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [generateNewPalette]); // Add this dependency to ensure the event handler uses the current version
   
-  const generateNewPalette = useCallback(() => {
-    setIsGenerating(true);
-    
-    // Animation timing
-    setTimeout(() => {
-      setColors(prevColors => {
-        return prevColors.map((color, index) => {
-          // Only regenerate colors for unlocked columns
-          if (lockedColors[index]) {
-            return color;
-          }
-          return generateRandomColor();
-        });
-      });
-      setIsGenerating(false);
-    }, 300);
-  }, [lockedColors]);
+  
   
   const toggleLock = (index: number) => {
+    console.log('Toggling lock for color at index:', index);
     setLockedColors(prev => {
-      const newLocks = [...prev];
+      let newLocks = [...prev];
       newLocks[index] = !newLocks[index];
+      console.log('New locks:', newLocks);
       return newLocks;
     });
   };
