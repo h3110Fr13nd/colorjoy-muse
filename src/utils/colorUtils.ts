@@ -1,28 +1,59 @@
+import { nameColor } from './colorNames';
+
 // Function to generate a random hex color
 export const generateRandomColor = (): string => {
   return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
 };
 
-// Function to determine if a color is light or dark
-export const isLightColor = (color: string): boolean => {
-  // Remove the hash if it exists
-  const hex = color.replace('#', '');
-  
-  // Convert to RGB
-  const r = parseInt(hex.substr(0, 2), 16);
-  const g = parseInt(hex.substr(2, 2), 16);
-  const b = parseInt(hex.substr(4, 2), 16);
-  
-  // Calculate brightness (HSP)
-  const brightness = Math.sqrt(
-    0.299 * (r * r) + 
-    0.587 * (g * g) + 
-    0.114 * (b * b)
-  );
-  
-  // Return true if the color is light
-  return brightness > 130;
+const HEX_PATTERN = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i;
+
+// Normalize user input ("abc", "#abc", "#AaBbCc") to "#AABBCC".
+// Returns null when the input is not a valid 3- or 6-digit hex color.
+export const normalizeHex = (input: string): string | null => {
+  const match = input.trim().match(HEX_PATTERN);
+  if (!match) return null;
+  let hex = match[1];
+  if (hex.length === 3) {
+    hex = hex.split('').map(c => c + c).join('');
+  }
+  return `#${hex.toUpperCase()}`;
 };
+
+export const isValidHex = (input: string): boolean => normalizeHex(input) !== null;
+
+// "#AABBCC" -> "rgb(170, 187, 204)"
+export const hexToRgbString = (color: string): string => {
+  const hex = color.replace('#', '');
+  const r = parseInt(hex.slice(0, 2), 16);
+  const g = parseInt(hex.slice(2, 4), 16);
+  const b = parseInt(hex.slice(4, 6), 16);
+  return `rgb(${r}, ${g}, ${b})`;
+};
+
+// WCAG relative luminance (0 = black, 1 = white)
+export const relativeLuminance = (color: string): number => {
+  const hex = color.replace('#', '');
+  const [r, g, b] = [0, 2, 4].map(i => {
+    const c = parseInt(hex.slice(i, i + 2), 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+
+// WCAG contrast ratio between two colors (1..21)
+export const contrastRatio = (a: string, b: string): number => {
+  const la = relativeLuminance(a);
+  const lb = relativeLuminance(b);
+  return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+};
+
+/** Text colors used on top of palette colors. Pure black keeps ≥ 4.5:1 (WCAG AA) on every color. */
+export const DARK_TEXT = '#000000';
+export const LIGHT_TEXT = '#FFFFFF';
+
+// A color is "light" when dark text is more readable on it than white text (WCAG contrast).
+export const isLightColor = (color: string): boolean =>
+  contrastRatio(color, DARK_TEXT) >= contrastRatio(color, LIGHT_TEXT);
 
 // Function to generate a complementary color
 export const getComplementaryColor = (color: string): string => {
@@ -67,70 +98,8 @@ export const adjustBrightness = (color: string, percent: number): string => {
   return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
 };
 
-// Function to get the name of a color based on its hex value
-// This is a simplified version - in a real app, you might use a more sophisticated algorithm or library
-export const getColorName = (hex: string): string => {
-  // Basic predefined color list - in a real app this would be more comprehensive
-  const colorNames: Record<string, string> = {
-    '#FF0000': 'Red',
-    '#00FF00': 'Green',
-    '#0000FF': 'Blue',
-    '#FFFF00': 'Yellow',
-    '#FF00FF': 'Magenta',
-    '#00FFFF': 'Cyan',
-    '#000000': 'Black',
-    '#FFFFFF': 'White',
-    '#808080': 'Gray',
-    '#FFA500': 'Orange',
-    '#800080': 'Purple',
-    '#A52A2A': 'Brown',
-    '#FFC0CB': 'Pink',
-    '#FFD700': 'Gold',
-    '#C0C0C0': 'Silver',
-  };
-  
-  hex = hex.toUpperCase();
-  
-  // Check if the exact color exists in our list
-  if (colorNames[hex]) {
-    return colorNames[hex];
-  }
-  
-  // For colors not in our list, return a general name based on RGB composition
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  
-  if (r === g && g === b) {
-    if (r < 64) return 'Charcoal';
-    if (r < 128) return 'Gray';
-    if (r < 224) return 'Silver';
-    return 'White';
-  }
-  
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  
-  if (max === r) {
-    if (g > 160 && b > 160) return 'Coral';
-    if (g > 128) return 'Orange';
-    return 'Red';
-  }
-  
-  if (max === g) {
-    if (r > 160 && b > 160) return 'Mint';
-    if (r > 128) return 'Lime';
-    return 'Green';
-  }
-  
-  if (max === b) {
-    if (r > 160 && g > 160) return 'Sky';
-    if (r > 128) return 'Azure';
-    return 'Blue';
-  }
-  
-  return 'Custom';
-};
+// Descriptive color name ("Sage", "Muted Teal", "Deep Coral", ...)
+export const getColorName = (hex: string): string => nameColor(hex);
 
 // Function to copy text to clipboard
 export const copyToClipboard = (text: string): Promise<void> => {
@@ -158,22 +127,22 @@ export const exportPaletteAsURL = (palette: string[]): string => {
 };
 
 // Function to parse palette from URL
-export const parsePaletteFromURL = (): string[] | null => {
-  const urlParams = new URLSearchParams(window.location.search);
+export const parsePaletteFromURL = (search: string = window.location.search): string[] | null => {
+  const urlParams = new URLSearchParams(search);
   const paletteParam = urlParams.get('palette');
   
   if (!paletteParam) return null;
   
-  try {
-    return paletteParam.split('-').map(c => `#${c}`);
-  } catch (e) {
-    console.error('Failed to parse palette from URL:', e);
-    return null;
-  }
+  const colors = paletteParam
+    .split('-')
+    .map(normalizeHex)
+    .filter((c): c is string => c !== null);
+
+  return colors.length > 0 ? colors : null;
 };
 
 // Function to convert hex color to HSL
-const hexToHSL = (hex: string): { h: number; s: number; l: number } => {
+export const hexToHSL = (hex: string): { h: number; s: number; l: number } => {
   // Remove the hash if it exists
   const cleanHex = hex.replace('#', '');
   
@@ -215,7 +184,7 @@ const hexToHSL = (hex: string): { h: number; s: number; l: number } => {
 };
 
 // Function to convert HSL to hex
-const hslToHex = (h: number, s: number, l: number): string => {
+export const hslToHex = (h: number, s: number, l: number): string => {
   h /= 360;
   s /= 100;
   l /= 100;
@@ -260,26 +229,31 @@ export const generateHarmonizedColor = (lockedColors: string[]): string => {
   const harmonyType = Math.floor(Math.random() * 5);
   
   switch (harmonyType) {
-    case 0: // Analogous - similar hue
+    case 0: { // Analogous - similar hue
       const analogousH = (baseHSL.h + (Math.random() * 40 - 20) + 360) % 360; // +/- 20 degrees
       return hslToHex(analogousH, baseHSL.s, baseHSL.l);
+    }
     
-    case 1: // Complementary - opposite hue
+    case 1: { // Complementary - opposite hue
       const complementaryH = (baseHSL.h + 180) % 360;
       return hslToHex(complementaryH, baseHSL.s, baseHSL.l);
+    }
     
-    case 2: // Triadic - 120 degrees apart
+    case 2: { // Triadic - 120 degrees apart
       const triadicH = (baseHSL.h + (Math.random() > 0.5 ? 120 : 240)) % 360;
       return hslToHex(triadicH, baseHSL.s, baseHSL.l);
+    }
     
-    case 3: // Monochromatic - same hue, different saturation/lightness
+    case 3: { // Monochromatic - same hue, different saturation/lightness
       const newS = Math.min(100, Math.max(20, baseHSL.s + (Math.random() * 40 - 20)));
       const newL = Math.min(90, Math.max(20, baseHSL.l + (Math.random() * 40 - 20)));
       return hslToHex(baseHSL.h, newS, newL);
+    }
     
-    case 4: // Split complementary
+    case 4: { // Split complementary
       const splitH = (baseHSL.h + 180 + (Math.random() > 0.5 ? 30 : -30)) % 360;
       return hslToHex(splitH, baseHSL.s, baseHSL.l);
+    }
     
     default:
       return generateRandomColor();
@@ -301,4 +275,32 @@ export const generateInfluencedPalette = (colors: string[], lockedPositions: boo
     
     return generateRandomColor();
   });
+};
+// Palette as CSS custom properties
+export const paletteToCSSVariables = (palette: string[]): string =>
+  palette.map((color, index) => `--color-${index + 1}: ${color};`).join('\n');
+
+// Trigger a download of the palette as a CSS file
+export const downloadPaletteAsCSS = (palette: string[], filename = 'color-palette.css'): void => {
+  const file = new Blob([paletteToCSSVariables(palette)], { type: 'text/plain' });
+  const url = URL.createObjectURL(file);
+  const element = document.createElement('a');
+  element.href = url;
+  element.download = filename;
+  document.body.appendChild(element);
+  element.click();
+  document.body.removeChild(element);
+  URL.revokeObjectURL(url);
+};
+
+/**
+ * Tints & shades of a color (light → dark), same hue & saturation. The step closest to the
+ * color's own lightness is the exact input color, so it always appears in the list.
+ */
+export const generateShades = (color: string, count = 11): string[] => {
+  const base = normalizeHex(color) ?? '#FFFFFF';
+  const { h, s, l } = hexToHSL(base);
+  const steps = Array.from({ length: count }, (_, i) => 95 - (i * 85) / (count - 1));
+  const own = steps.reduce((best, v, i) => (Math.abs(v - l) < Math.abs(steps[best] - l) ? i : best), 0);
+  return steps.map((lightness, i) => (i === own ? base : hslToHex(h, s, lightness).toUpperCase()));
 };

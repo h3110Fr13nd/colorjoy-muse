@@ -50,6 +50,26 @@ npm run dev
 - Click on "New codespace" to launch a new Codespace environment.
 - Edit files directly within the Codespace and commit and push your changes once you're done.
 
+## Testing
+
+```sh
+npm test                # unit tests, then end-to-end tests
+npm run test:unit       # Vitest: color math, naming, image extraction, storage, palette editor hook
+npm run test:unit:watch # Vitest in watch mode
+npm run test:e2e        # Playwright (Chromium): builds the app, serves it and runs the browser tests
+```
+
+The first time, install the browser used by the end-to-end tests:
+
+```sh
+npm run test:e2e:install
+```
+
+- Unit tests live next to the code (`src/**/*.test.ts(x)`).
+- End-to-end tests live in `e2e/` and cover the generator (locking, generating, hex editing, shades),
+  saved palettes (save / rename / edit / delete), the image palette page and layout checks
+  (tooltips next to their icons, one-row header, no overlapping controls).
+
 ## What technologies are used for this project?
 
 This project is built with .

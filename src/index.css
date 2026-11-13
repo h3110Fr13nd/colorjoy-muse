@@ -91,6 +91,16 @@
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
   body {
     @apply bg-background text-foreground font-sans overflow-x-hidden;
     font-family: 'Inter', sans-serif;
@@ -104,6 +114,120 @@
 .color-column {
   position: relative;
   transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  /* Lets the column's content adapt to the column's own size (many colors, split views). */
+  container-type: size;
+}
+
+/* Narrow columns: stack the hex code and picker, smaller type. */
+@container (max-width: 170px) {
+  .color-column .hex-row {
+    flex-direction: column;
+  }
+  .color-column .hex-display {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+  }
+}
+
+@container (max-width: 100px) {
+  .color-column .hex-display {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+}
+
+/*
+  Short desktop columns (small screens, resized split). The toolbar must fit in the top half of the
+  column (the middle band is reserved for the "+" buttons): tighten, and drop the
+  duplicate "Copy hex" button (also available in the ⋮ menu). Toolbar icons stay vertical.
+*/
+@media (min-width: 768px) {
+  @container (max-height: 640px) {
+    .color-column .color-column-body {
+      padding-top: 1rem;
+      padding-bottom: 1rem;
+    }
+    .color-column .color-toolbar {
+      gap: 0.125rem;
+    }
+    .color-column .color-action-btn {
+      padding: 0.5rem;
+    }
+  }
+
+  @container (max-height: 470px) {
+    .color-column .color-toolbar {
+      flex-direction: column;
+      gap: 0.125rem;
+    }
+    .color-column .color-action-btn {
+      padding: 0.375rem;
+    }
+    .color-column .copy-hex-btn {
+      display: none;
+    }
+  }
+
+  @container (max-height: 320px) {
+    .color-column .color-column-body {
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+    }
+    .color-column .color-action-btn {
+      padding: 0.25rem;
+    }
+    .color-column .color-action-btn svg {
+      width: 1rem;
+      height: 1rem;
+    }
+  }
+}
+
+/* Very narrow columns (many colors / squeezed split): vertical hex code, no color name. */
+@media (min-width: 768px) {
+  @container (max-width: 72px) {
+    .color-column .hex-display {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      padding: 0.25rem 0;
+    }
+    .color-column .color-name {
+      display: none;
+    }
+  }
+}
+
+/* Palette slots (column + its "+" buttons): in very narrow desktop columns the edge "+" buttons
+   (start/end) would touch the "+" between columns, so only the in-between ones stay. */
+.palette-slot {
+  container-type: inline-size;
+}
+
+@media (min-width: 768px) {
+  @container (max-width: 90px) {
+    .palette-slot .add-color-edge {
+      display: none;
+    }
+  }
+}
+
+/* Shade picker header: no room for the "Shades" label in narrow columns. */
+@container (max-width: 110px) {
+  .color-column .shades-label {
+    display: none;
+  }
+  .color-column .shades-header {
+    justify-content: center;
+  }
+}
+
+/* Narrow mobile rows: hex + toolbar side by side need ~360px; drop the duplicate "Copy hex". */
+@media (max-width: 767px) {
+  @container (max-width: 359px) {
+    .color-column .copy-hex-btn {
+      display: none;
+    }
+  }
 }
 
 .color-column:hover .color-actions {
@@ -153,8 +277,10 @@ button {
   transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* Press feedback via the standalone `scale` property: it composes with Tailwind transforms
+   (e.g. the -translate-1/2 centering of image markers) instead of replacing them. */
 button:active {
-  transform: scale(0.97);
+  scale: 0.97;
 }
 
 .logo-text {
